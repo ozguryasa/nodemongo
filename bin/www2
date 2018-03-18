@@ -1,0 +1,39 @@
+const express = require('express');
+const bodyParser= require('body-parser');
+var path = require('path');
+const app = express();
+const mongoClient = require('mongodb').MongoClient;
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+var db;
+
+app.use(bodyParser.urlencoded({extended: true}))
+app.get('/', function (request, response) {
+    db.collection('quotes').find().toArray(function(err, result) {
+        if (err) return console.log(err);
+        // renders index    .ejs
+        response.render('index.ejs', {quotes: result});
+        // send HTML file populated with quotes here
+    });
+});
+
+app.post('/quotes', (req, res) => {
+    db.collection('quotes').save(req.body, (err, result) => {
+    if (err) return console.log(err);
+    console.log('saved to database');
+    res.redirect('/');
+    });
+});
+
+
+
+
+mongoClient.connect('mongodb://localhost:27017', (err, client) => {
+    if (err) return console.log(err);
+    db = client.db('star-wars-quotes') ;// whatever your database name is
+    app.listen(3000, () => {
+    console.log('listening on 3000')
+});
+});
